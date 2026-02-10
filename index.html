@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine? 💖</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Nunito:wght@400;700&family=Sacramento&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-bg: #FFF5F5;
+            --color-primary: #FF4D6D;
+            --color-secondary: #FF8FA3;
+            --color-text: #590D22;
+            --note-yellow: #FFF9C4;
+            --note-pink: #FFDEE9;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            font-family: 'Nunito', sans-serif;
+            color: var(--color-text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .font-handwriting {
+            font-family: 'Dancing Script', cursive;
+        }
+        
+        .font-quote {
+            font-family: 'Sacramento', cursive;
+        }
+
+        .font-signature {
+            font-family: 'Great Vibes', cursive;
+        }
+
+        /* Floating Hearts & Sparkles Animation */
+        .bg-element {
+            position: absolute;
+            animation: float 15s infinite linear;
+            z-index: 0;
+            user-select: none;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        .sparkle {
+            animation: twinkle 4s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Pulse Animation for Yes Button */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.1); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.1); }
+            60% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-pulse {
+            animation: heartbeat 2s infinite;
+        }
+
+        /* Sticky Note Styles */
+        .sticky-note {
+            background: var(--note-yellow);
+            box-shadow: 2px 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        .sticky-note:nth-child(even) {
+            background: var(--note-pink);
+            transform: rotate(2deg);
+        }
+
+        .sticky-note:nth-child(odd) {
+            transform: rotate(-2deg);
+        }
+
+        .sticky-note:hover {
+            transform: scale(1.05) rotate(0deg);
+            z-index: 10;
+        }
+
+        /* Tape effect on notes */
+        .sticky-note::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 20px;
+            background-color: rgba(255,255,255,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Fade transitions */
+        .fade-in {
+            animation: fadeIn 1.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Celebration Modal */
+        #celebration-modal {
+            background: rgba(255, 245, 245, 0.95);
+            backdrop-filter: blur(5px);
+        }
+        
+        .hidden-initial {
+            opacity: 0;
+            display: none;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Runaway Button Logic */
+        #no-btn {
+            transition: all 0.2s ease;
+            position: relative; 
+        }
+
+        /* Footer Styles */
+        .glass-footer {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .shimmer-text {
+            background: linear-gradient(90deg, #FF4D6D, #FF8FA3, #FF4D6D);
+            background-size: 200% auto;
+            color: #FF4D6D;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 5s linear infinite;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+    </style>
+</head>
+<body class="relative pb-24"> <!-- Added padding-bottom for fixed footer -->
+
+    <!-- Background Audio -->
+    <audio id="bg-music" loop>
+        <source src="https://pixabay.com/music/download/music-116035.mp3?filename=romantic-music-116035.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Music Toggle -->
+    <button id="music-toggle" class="fixed top-4 right-4 z-50 bg-white p-3 rounded-full shadow-md hover:shadow-lg transition text-pink-500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-music"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    </button>
+
+    <!-- Background Hearts & Sparkles -->
+    <div id="hearts-container" class="fixed inset-0 pointer-events-none overflow-hidden">
+        <!-- Elements injected via JS -->
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center px-4 py-10 relative z-10 w-full max-w-4xl mx-auto">
+        
+        <!-- Animated Quotes Section -->
+        <div class="h-16 mb-8 text-center flex items-center justify-center">
+            <p id="quote-display" class="font-quote text-2xl md:text-3xl text-pink-600 transition-opacity duration-1000 opacity-0">
+                <!-- Quotes will cycle here -->
+            </p>
+        </div>
+
+        <!-- Main Question -->
+        <div class="text-center mb-12 fade-in">
+            <h1 class="font-handwriting text-6xl md:text-8xl text-[#FF4D6D] mb-4 drop-shadow-sm leading-tight">
+                Will you be my <br> Valentine? 💖
+            </h1>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col md:flex-row gap-6 items-center justify-center mb-16 w-full h-32 relative">
+            
+            <button id="yes-btn" class="btn-pulse bg-[#FF4D6D] hover:bg-[#ff3355] text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg transform transition hover:-translate-y-1 border-4 border-transparent hover:border-pink-200">
+                YES! 🥰
+            </button>
+            
+            <button id="no-btn" class="bg-white text-gray-500 font-bold py-3 px-8 rounded-full text-lg shadow-md border border-gray-200 hover:bg-gray-50">
+                No
+            </button>
+
+        </div>
+
+        <!-- Sticky Notes Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 w-full">
+            
+            <div class="sticky-note p-6 flex items-center justify-center text-center fade-in" style="animation-delay: 0.5s;">
+                <p class="font-handwriting text-2xl text-gray-700">
+                    "I was smiling while making this."
+                </p>
+            </div>
+
+            <div class="sticky-note p-6 flex items-center justify-center text-center fade-in" style="animation-delay: 1s;">
+                <p class="font-handwriting text-2xl text-gray-700">
+                    "You make my heart smile."
+                </p>
+            </div>
+
+            <div class="sticky-note p-6 flex items-center justify-center text-center fade-in" style="animation-delay: 1.5s;">
+                <p class="font-handwriting text-2xl text-gray-700">
+                    "This page exists just for you."
+                </p>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Elegant Footer -->
+    <footer class="fixed bottom-0 w-full z-40 glass-footer fade-in" style="animation-delay: 2s;">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col justify-center items-center">
+            <p class="font-signature text-3xl md:text-4xl shimmer-text drop-shadow-sm">
+                @Yuvraj Shrimali
+            </p>
+        </div>
+    </footer>
+
+    <!-- Celebration Overlay -->
+    <div id="celebration-modal" class="fixed inset-0 z-50 hidden-initial items-center justify-center flex-col text-center p-4">
+        <div class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl max-w-lg mx-auto border-4 border-pink-200 transform scale-100 animate-[bounce_1s_infinite]">
+            <h2 class="font-handwriting text-6xl text-[#FF4D6D] mb-4">Yay!!! 💕</h2>
+            <p class="font-quote text-3xl text-gray-700 mb-6">
+                You just made my day! <br> Can't wait to see you.
+            </p>
+            <div class="text-6xl animate-bounce">
+                🐻❤️🌹
+            </div>
+            <p class="mt-6 text-sm text-gray-400 font-nunito">Screenshot this and send it to me!</p>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Background Hearts & Sparkles Generation ---
+        const heartsContainer = document.getElementById('hearts-container');
+        const symbols = ['❤️', '💖', '💕', '🌸', '✨', '✨']; // Added sparkles
+        
+        function createParticle() {
+            const particle = document.createElement('div');
+            const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+            
+            particle.classList.add('bg-element');
+            particle.innerText = symbol;
+            
+            if(symbol === '✨') {
+                particle.classList.add('sparkle');
+                particle.style.color = '#FFD700'; // Gold for sparkles
+            } else {
+                particle.style.color = 'rgba(255, 77, 109, 0.15)'; // Pink for hearts
+            }
+
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.fontSize = Math.random() * 20 + 15 + 'px';
+            particle.style.animationDuration = Math.random() * 5 + 10 + 's';
+            
+            heartsContainer.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 15000);
+        }
+
+        setInterval(createParticle, 400);
+
+        // --- 2. Quote Rotator ---
+        const quotes = [
+            "Every love story is beautiful, but ours could be my favorite.",
+            "In a world full of maybe's, you're my yes.",
+            "You make my heart smile.",
+            "Life is better with you.",
+            "You're my favorite notification."
+        ];
+        
+        const quoteElement = document.getElementById('quote-display');
+        let quoteIndex = 0;
+
+        function showQuote() {
+            quoteElement.style.opacity = 0;
+            setTimeout(() => {
+                quoteElement.innerText = quotes[quoteIndex];
+                quoteElement.style.opacity = 1;
+                quoteIndex = (quoteIndex + 1) % quotes.length;
+            }, 1000);
+        }
+
+        showQuote(); 
+        setInterval(showQuote, 4000); 
+
+        // --- 3. The Runaway No Button ---
+        const noBtn = document.getElementById('no-btn');
+        const yesBtn = document.getElementById('yes-btn');
+
+        const moveNoButton = (e) => {
+            if(e.type === 'touchstart') e.preventDefault();
+
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 40);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 40);
+            
+            const safeX = Math.max(20, Math.min(x, window.innerWidth - 120));
+            const safeY = Math.max(20, Math.min(y, window.innerHeight - 100));
+
+            noBtn.style.position = 'fixed'; 
+            noBtn.style.left = `${safeX}px`;
+            noBtn.style.top = `${safeY}px`;
+            noBtn.style.zIndex = '100'; 
+            
+            const texts = ["No?", "Are you sure?", "Try again!", "Can't catch me!", "Really?"];
+            noBtn.innerText = texts[Math.floor(Math.random() * texts.length)];
+        };
+
+        noBtn.addEventListener('mouseover', moveNoButton);
+        noBtn.addEventListener('touchstart', moveNoButton);
+        noBtn.addEventListener('click', moveNoButton); 
+
+        // --- 4. The Celebration (Yes Button) ---
+        const modal = document.getElementById('celebration-modal');
+
+        yesBtn.addEventListener('click', () => {
+            triggerConfetti();
+            modal.style.display = 'flex';
+            
+            setTimeout(() => {
+                modal.style.opacity = '1';
+            }, 50);
+
+            const audio = document.getElementById('bg-music');
+            audio.play().catch(e => console.log("Audio play failed interaction required"));
+        });
+
+        function triggerConfetti() {
+            const duration = 3000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 60 };
+
+            const random = (min, max) => Math.random() * (max - min) + min;
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        // --- 5. Music Toggle ---
+        const musicBtn = document.getElementById('music-toggle');
+        const audio = document.getElementById('bg-music');
+        let isPlaying = false;
+
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                musicBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-music"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>'; 
+            } else {
+                audio.play();
+                musicBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pause"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>'; 
+            }
+            isPlaying = !isPlaying;
+        });
+
+    </script>
+</body>
+</html>
